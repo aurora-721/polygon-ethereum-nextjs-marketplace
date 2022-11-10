@@ -3,6 +3,7 @@
 .secret
 .infuraid
 config.js
+.config.js
 
 # dependencies
 /node_modules
@@ -29,6 +30,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
+.env.privateKey
 .env.local
 .env.development.local
 .env.test.local

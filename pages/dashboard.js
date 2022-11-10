@@ -29,14 +29,28 @@ export default function CreatorDashboard() {
 
     const items = await Promise.all(data.map(async i => {
       const tokenUri = await contract.tokenURI(i.tokenId)
-      const meta = await axios.get(tokenUri)
+
+      let image = "https://d19d5sz0wkl0lu.cloudfront.net/dims4/default/02319ca/2147483647/resize/800x%3E/quality/90/?url=https%3A%2F%2Fatd-brightspot.s3.amazonaws.com%2F3b%2F80%2F46943d65d63a5ec05bbce0a5ec75%2Fmistake.jpg";
+      if (tokenUri.includes("ipfs://")) {
+        const dataUrl = tokenUri.replace("ipfs://", "https://promptmarketplace.mypinata.cloud/ipfs/");
+        const data = await axios.get(dataUrl);
+        
+        if (data.data.imageUrl != undefined) {
+          image = data.data.imageUrl
+          if (image.includes("ipfs://")) {
+            image = image.replace("ipfs://", "https://promptmarketplace.mypinata.cloud/ipfs/");
+          }
+        }
+      }
+
+
       let price = ethers.utils.formatUnits(i.price.toString(), 'ether')
       let item = {
         price,
         tokenId: i.tokenId.toNumber(),
         seller: i.seller,
         owner: i.owner,
-        image: meta.data.image,
+        image: image,
       }
       return item
     }))

@@ -15,6 +15,16 @@ export default function Home() {
   useEffect(() => {
     loadNFTs()
   }, [])
+
+  function checkIfJSON(data) {
+    try {
+      JSON.parse(data);
+      return true;
+    } catch (e) {
+        return false;
+    }
+  }
+
   async function loadNFTs() {
     /* create a generic provider and query for unsold market items */
     const provider = new ethers.providers.JsonRpcProvider()
@@ -27,16 +37,37 @@ export default function Home() {
     */
     const items = await Promise.all(data.map(async i => {
       const tokenUri = await contract.tokenURI(i.tokenId)
-      const meta = await axios.get(tokenUri)
-      let price = ethers.utils.formatUnits(i.price.toString(), 'ether')
+      let name = "Does not exist";
+      let description = "Does not exsist";
+      let image = "https://d19d5sz0wkl0lu.cloudfront.net/dims4/default/02319ca/2147483647/resize/800x%3E/quality/90/?url=https%3A%2F%2Fatd-brightspot.s3.amazonaws.com%2F3b%2F80%2F46943d65d63a5ec05bbce0a5ec75%2Fmistake.jpg";
+      if (tokenUri.includes("ipfs://")) {
+        const dataUrl = tokenUri.replace("ipfs://", "https://promptmarketplace.mypinata.cloud/ipfs/");
+        const data = await axios.get(dataUrl);
+
+        if (data.data.name != undefined) {
+          name = data.data.name;
+        }
+        if (data.data.description != undefined) {
+          description = data.data.description;
+        }
+        if (data.data.imageUrl != undefined) {
+          image = data.data.imageUrl
+          if (image.includes("ipfs://")) {
+            image = image.replace("ipfs://", "https://promptmarketplace.mypinata.cloud/ipfs/");
+          }
+        }
+      }
+ 
+      let price = ethers.utils.formatUnits(i.price.toString(), 'ether');
+      //console.log(meta.data.image);
       let item = {
         price,
         tokenId: i.tokenId.toNumber(),
         seller: i.seller,
         owner: i.owner,
-        image: meta.data.image,
-        name: meta.data.name,
-        description: meta.data.description,
+        image: image,
+        name: name,
+        description: description,
       }
       return item
     }))
@@ -59,7 +90,10 @@ export default function Home() {
     await transaction.wait()
     loadNFTs()
   }
-  if (loadingState === 'loaded' && !nfts.length) return (<h1 className="px-20 py-10 text-3xl">No items in marketplace</h1>)
+  if (loadingState === 'loaded' && !nfts.length) return (
+    <h1 className="px-20 py-10 text-3xl">No items in marketplace</h1>
+  )
+
   return (
     <div className="flex justify-center">
       <div className="px-4" style={{ maxWidth: '1600px' }}>
