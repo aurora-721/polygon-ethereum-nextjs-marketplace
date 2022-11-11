@@ -16,15 +16,6 @@ export default function Home() {
     loadNFTs()
   }, [])
 
-  function checkIfJSON(data) {
-    try {
-      JSON.parse(data);
-      return true;
-    } catch (e) {
-        return false;
-    }
-  }
-
   async function loadNFTs() {
     /* create a generic provider and query for unsold market items */
     const provider = new ethers.providers.JsonRpcProvider()
